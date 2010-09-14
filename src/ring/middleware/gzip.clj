@@ -18,7 +18,8 @@
   (fn [req]
     (let [resp (handler req)
           body (resp :body)]
-      (if (and (not ((get resp :headers {}) "content-encoding"))
+      (if (and (= (resp :status) 200)
+               (not ((get resp :headers {}) "content-encoding"))
                (or
                 (and (string? body) (> (count body) 200))
                 (instance? InputStream body)))
