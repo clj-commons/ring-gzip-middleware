@@ -14,8 +14,9 @@
 (defn wrap-gzip [handler]
   (fn [req]
     (let [resp (handler req)]
-      (if (and (not ((resp :headers) "content-encoding"))
-               (string? (resp :body)))
+      (if (and (not ((get resp :headers {}) "content-encoding"))
+               (string? (resp :body))
+               (> (count (resp :body)) 200))
         (let [accepts (get (req :headers) "accept-encoding" "")
               match (re-find #"(gzip|\*)(;q=((0|1)(.\d+)?))?" accepts)]
           (if (and match (not (contains? #{"0" "0.0" "0.00" "0.000"}
