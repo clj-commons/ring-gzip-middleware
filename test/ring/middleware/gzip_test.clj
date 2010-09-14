@@ -3,7 +3,7 @@
         clojure.contrib.io
         ring.middleware.gzip)
   (:import (java.util Arrays))
-  (:import (java.io ByteArrayOutputStream))
+  (:import (java.io StringBufferInputStream ByteArrayOutputStream))
   (:import (java.util.zip GZIPInputStream)))
 
 (defn unzip [in]
@@ -26,6 +26,15 @@
 
 (deftest test-basic-gzip
   (let [resp (app (accepting "gzip"))]
+    (is (= 200 (:status resp)))
+    (is (= "gzip" (encoding resp)))
+    (is (Arrays/equals (unzip (resp :body)) (.getBytes output)))))
+
+(deftest test-inputstream-gzip
+  (let [app (wrap-gzip (fn [req] {:status 200
+                                  :body (StringBufferInputStream. output)
+                                  :headers {}}))
+        resp (app (accepting "gzip"))]
     (is (= 200 (:status resp)))
     (is (= "gzip" (encoding resp)))
     (is (Arrays/equals (unzip (resp :body)) (.getBytes output)))))
