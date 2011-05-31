@@ -18,14 +18,18 @@
     pipe-in))
 
 (defn gzipped-response [resp]
-  (let [resp (assoc-in resp [:headers "content-encoding"] "gzip")]
-    (update-in resp [:body] piped-gzipped-input-stream)))
+  (-> resp
+      (update-in [:headers]
+                 #(-> %
+                      (assoc "Content-Encoding" "gzip")
+                      (dissoc "Content-Length")))
+      (update-in [:body] piped-gzipped-input-stream)))
 
 (defn wrap-gzip [handler]
   (fn [req]
     (let [{:keys [body status] :as resp} (handler req)]
       (if (and (= status 200)
-               (not (get-in resp [:headers "content-encoding"]))
+               (not (get-in resp [:headers "Content-Encoding"]))
                (or
                 (and (string? body) (> (count body) 200))
                 (instance? InputStream body)
