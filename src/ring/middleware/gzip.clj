@@ -1,27 +1,29 @@
 (ns ring.middleware.gzip
-  (:require [clojure.contrib.io :as io])
+  (:require [clojure.java.io :as io])
   (:import (java.util.zip GZIPOutputStream)
            (java.io InputStream
+                    Closeable
                     File
-                    ByteArrayInputStream
-                    ByteArrayOutputStream)))
+                    PipedInputStream
+                    PipedOutputStream)))
+
+(defn piped-gzipped-input-stream [in]
+  (let [pipe-in (PipedInputStream.)
+        pipe-out (PipedOutputStream. pipe-in)]
+    (future                  ; new thread to prevent blocking deadlock
+      (with-open [out (GZIPOutputStream. pipe-out)]
+        (io/copy in out))
+      (when (instance? Closeable in)
+        (.close in)))
+    pipe-in))
 
 (defn gzipped-response [resp]
-  (let [body (resp :body)
-        bout (ByteArrayOutputStream.)
-        out (GZIPOutputStream. bout)
-        resp (assoc-in resp [:headers "content-encoding"] "gzip")]
-    (io/copy (resp :body) out)
-    (.close out)
-    (if (instance? InputStream body)
-      (.close body))
-    (assoc resp :body (ByteArrayInputStream. (.toByteArray bout)))))
+  (let [resp (assoc-in resp [:headers "content-encoding"] "gzip")]
+    (update-in resp [:body] piped-gzipped-input-stream)))
 
 (defn wrap-gzip [handler]
   (fn [req]
-    (let [{body :body
-           status :status
-           :as resp} (handler req)]
+    (let [{:keys [body status] :as resp} (handler req)]
       (if (and (= status 200)
                (not (get-in resp [:headers "content-encoding"]))
                (or
