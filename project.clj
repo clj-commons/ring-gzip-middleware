@@ -1,4 +1,4 @@
-(defproject amalloy/ring-gzip-middleware "0.1.0"
+(defproject amalloy/ring-gzip-middleware "0.1.1"
   :description "Ring gzip encoding middleware"
   :dependencies [[org.clojure/clojure "1.2.1"]]
   :multi-deps {"clojure-1.2.0" [[org.clojure/clojure "1.2.0"]]
