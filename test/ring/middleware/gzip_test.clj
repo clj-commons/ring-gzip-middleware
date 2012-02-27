@@ -1,14 +1,19 @@
 (ns ring.middleware.gzip-test
   (:use clojure.test
         ring.middleware.gzip)
-  (:require [clojure.contrib.io :as io])
+  (:require [clojure.java.io :as io])
   (:import (java.util Arrays))
   (:import (java.io StringBufferInputStream ByteArrayOutputStream))
   (:import (java.util.zip GZIPInputStream)))
 
+(defn- to-byte-array [inputstream]
+  (let [buffer (ByteArrayOutputStream.)]
+    (io/copy inputstream buffer)
+    (.toByteArray buffer)))
+
 (defn unzip [in]
   (let [in (GZIPInputStream. in)
-        bytes (io/to-byte-array in)]
+        bytes (to-byte-array in)]
     (.close in)
     bytes))
 
