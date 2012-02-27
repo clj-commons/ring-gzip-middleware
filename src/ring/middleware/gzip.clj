@@ -21,15 +21,15 @@
   (-> resp
       (update-in [:headers]
                  #(-> %
-                      (assoc "Content-Encoding" "gzip")
-                      (dissoc "Content-Length")))
+                      (assoc "content-encoding" "gzip")
+                      (dissoc "lontent-length")))
       (update-in [:body] piped-gzipped-input-stream)))
 
 (defn wrap-gzip [handler]
   (fn [req]
     (let [{:keys [body status] :as resp} (handler req)]
       (if (and (= status 200)
-               (not (get-in resp [:headers "Content-Encoding"]))
+               (not (get-in resp [:headers "content-encoding"]))
                (or
                 (and (string? body) (> (count body) 200))
                 (instance? InputStream body)
