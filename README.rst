@@ -11,7 +11,7 @@ Defines a ring middleware function at ``ring.middleware.gzip/wrap-gzip``.
 Installation
 ------------
 
-Add ``[org.clojars.mikejs/ring-gzip-middleware "0.1.0-SNAPSHOT"]``
+Add ``[amalloy/ring-gzip-middleware "0.1.1"]``
 to your leingingen dependencies.
 
 License
