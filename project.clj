@@ -1,6 +1,8 @@
 (defproject amalloy/ring-gzip-middleware "0.1.1"
   :description "Ring gzip encoding middleware"
-  :dependencies [[org.clojure/clojure "1.2.1"]]
-  :multi-deps {"clojure-1.2.0" [[org.clojure/clojure "1.2.0"]]
-               "clojure-1.4.0-master-SNAPSHOT" [[org.clojure/clojure "1.4.0-master-SNAPSHOT"]]}
-  :dev-dependencies [[lein-multi "1.1.0-SNAPSHOT"]])
+  :dependencies [[org.clojure/clojure "1.4.0"]]
+  :profiles {:1.2.0 {:dependencies [[org.clojure/clojure "1.2.0"]]}
+             :1.3.0 {:dependencies [[org.clojure/clojure "1.3.0"]]}
+             :1.4.0 {}}
+  :aliases {"all" ["with-profile" "1.2.0:1.3.0:1.4.0"]}
+  :min-lein-version "2.0.0")

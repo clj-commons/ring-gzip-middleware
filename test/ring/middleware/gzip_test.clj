@@ -18,7 +18,7 @@
     bytes))
 
 (defn encoding [resp]
-  ((:headers resp) "content-encoding"))
+  ((:headers resp) "Content-Encoding"))
 
 (def output (apply str (repeat 300 "a")))
 
@@ -38,6 +38,16 @@
 (deftest test-inputstream-gzip
   (let [app (wrap-gzip (fn [req] {:status 200
                                   :body (StringBufferInputStream. output)
+                                  :headers {}}))
+        resp (app (accepting "gzip"))]
+    (is (= 200 (:status resp)))
+    (is (= "gzip" (encoding resp)))
+    (is (Arrays/equals (unzip (resp :body)) (.getBytes output)))))
+
+(deftest test-string-seq-gzip
+  (let [app (wrap-gzip (fn [req] {:status 200
+                                  :body (->> (partition-all 20 output)
+                                          (map (partial apply str)))
                                   :headers {}}))
         resp (app (accepting "gzip"))]
     (is (= 200 (:status resp)))
@@ -69,7 +79,7 @@
   "don't compress responses which already have a content-encoding header"
   (let [app (wrap-gzip (fn [req] {:status 200
                                   :body output
-                                  :headers {"content-encoding" "text"}}))
+                                  :headers {"Content-Encoding" "text"}}))
         resp (app (accepting "gzip"))]
     (is (= "text" (encoding resp)))
     (is (= output (:body resp)))))
