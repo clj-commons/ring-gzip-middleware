@@ -12,7 +12,9 @@
         pipe-out (PipedOutputStream. pipe-in)]
     (future                  ; new thread to prevent blocking deadlock
       (with-open [out (GZIPOutputStream. pipe-out)]
-        (io/copy in out))
+        (if (seq? in)
+          (doseq [string in] (io/copy (str string) out))
+          (io/copy in out)))
       (when (instance? Closeable in)
         (.close in)))
     pipe-in))
@@ -32,6 +34,7 @@
                (not (get-in resp [:headers "Content-Encoding"]))
                (or
                 (and (string? body) (> (count body) 200))
+                (seq? body)
                 (instance? InputStream body)
                 (instance? File body)))
         (let [accepts (get-in req [:headers "accept-encoding"] "")

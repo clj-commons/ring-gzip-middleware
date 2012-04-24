@@ -44,6 +44,16 @@
     (is (= "gzip" (encoding resp)))
     (is (Arrays/equals (unzip (resp :body)) (.getBytes output)))))
 
+(deftest test-string-seq-gzip
+  (let [app (wrap-gzip (fn [req] {:status 200
+                                  :body (->> (partition-all 20 output)
+                                          (map (partial apply str)))
+                                  :headers {}}))
+        resp (app (accepting "gzip"))]
+    (is (= 200 (:status resp)))
+    (is (= "gzip" (encoding resp)))
+    (is (Arrays/equals (unzip (resp :body)) (.getBytes output)))))
+
 (deftest test-accepts
   (doseq [ctype ["gzip" "*" "gzip,deflate" "gzip,deflate,sdch"
                  "gzip, deflate" "gzip;q=1" "deflate,gzip"
