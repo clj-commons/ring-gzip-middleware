@@ -18,7 +18,7 @@
     bytes))
 
 (defn encoding [resp]
-  ((:headers resp) "content-encoding"))
+  ((:headers resp) "Content-Encoding"))
 
 (def output (apply str (repeat 300 "a")))
 
@@ -69,7 +69,7 @@
   "don't compress responses which already have a content-encoding header"
   (let [app (wrap-gzip (fn [req] {:status 200
                                   :body output
-                                  :headers {"content-encoding" "text"}}))
+                                  :headers {"Content-Encoding" "text"}}))
         resp (app (accepting "gzip"))]
     (is (= "text" (encoding resp)))
     (is (= output (:body resp)))))
