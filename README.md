@@ -11,7 +11,7 @@ middleware in a `->` form).
 
 ### Installation
 
-Add `[amalloy/ring-gzip-middleware "0.1.1"]` to your Leingingen dependencies.
+Add `[amalloy/ring-gzip-middleware "0.1.2"]` to your Leingingen dependencies.
 
 ### License
 
