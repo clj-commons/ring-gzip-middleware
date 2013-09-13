@@ -45,14 +45,22 @@
     (is (Arrays/equals (unzip (resp :body)) (.getBytes output)))))
 
 (deftest test-string-seq-gzip
-  (let [app (wrap-gzip (fn [req] {:status 200
-                                  :body (->> (partition-all 20 output)
-                                          (map (partial apply str)))
+  (let [seq-body (->> (partition-all 20 output)
+                      (map (partial apply str)))
+        app (wrap-gzip (fn [req] {:status 200
+                                  :body seq-body
                                   :headers {}}))
         resp (app (accepting "gzip"))]
     (is (= 200 (:status resp)))
-    (is (= "gzip" (encoding resp)))
-    (is (Arrays/equals (unzip (resp :body)) (.getBytes output)))))
+    (if @@#'ring.middleware.gzip/flushable-gzip?
+      (do
+        (println "Running on JDK7+, testing gzipping of seq response bodies.")
+        (is (= "gzip" (encoding resp)))
+        (is (Arrays/equals (unzip (resp :body)) (.getBytes output))))
+      (do 
+        (println "Running on <=JDK6, testing non-gzipping of seq response bodies.")
+        (is (nil? (encoding resp)))
+        (is (= seq-body (resp :body)))))))
 
 (deftest test-accepts
   (doseq [ctype ["gzip" "*" "gzip,deflate" "gzip,deflate,sdch"
