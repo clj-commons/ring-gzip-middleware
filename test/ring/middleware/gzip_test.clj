@@ -52,7 +52,7 @@
                                   :headers {}}))
         resp (app (accepting "gzip"))]
     (is (= 200 (:status resp)))
-    (if @#'ring.middleware.gzip/flushable-gzip?
+    (if @@#'ring.middleware.gzip/flushable-gzip?
       (do
         (println "Running on JDK7+, testing gzipping of seq response bodies.")
         (is (= "gzip" (encoding resp)))
