@@ -1,6 +1,7 @@
 (ns ring.middleware.gzip
   (:require [clojure.java.io :as io]
-            clojure.reflect)
+            clojure.reflect
+            [clojure.string :as str])
   (:import (java.util.zip GZIPOutputStream)
            (java.io InputStream
                     OutputStream
@@ -71,6 +72,9 @@
                 (instance? InputStream body)
                 (instance? File body)))
         (let [accepts (get-in req [:headers "accept-encoding"] "")
+              accepts (if (string? accepts)
+                        accepts
+                        (str/join ", " accepts))
               match (re-find #"(gzip|\*)(;q=((0|1)(.\d+)?))?" accepts)]
           (if (and match (not (contains? #{"0" "0.0" "0.00" "0.000"}
                                          (match 3))))
