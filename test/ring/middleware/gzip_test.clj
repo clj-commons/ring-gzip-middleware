@@ -74,6 +74,10 @@
                  "gzip;q=0,deflate" "*;q=0"]]
     (is (nil? (encoding (app (accepting ctype)))))))
 
+(deftest test-multiple-accepts
+  (is (= "gzip" (encoding (app (accepting ["gzip,deflate" "deflate"])))))
+  (is (nil? (encoding (app (accepting ["deflate" "sdch"]))))))
+
 (deftest test-min-length
   "don't compress string bodies less than 200 characters long"
   (let [output (apply str (repeat 10 "a"))
