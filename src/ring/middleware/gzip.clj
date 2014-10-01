@@ -1,13 +1,14 @@
 (ns ring.middleware.gzip
   (:require [clojure.java.io :as io]
             clojure.reflect)
-  (:import (java.util.zip GZIPOutputStream)
+  (:import (java.util.zip GZIPOutputStream GZIPInputStream ZipException)
            (java.io InputStream
                     OutputStream
                     Closeable
                     File
                     PipedInputStream
-                    PipedOutputStream)))
+                    PipedOutputStream
+                    ByteArrayInputStream)))
 
 ; only available on JDK7
 (def ^:private flushable-gzip?
@@ -77,3 +78,27 @@
             (gzipped-response resp)
             resp))
         resp))))
+
+(defn gzip-request? [request]
+  (when-let [type (get-in request [:headers "content-encoding"])]
+    (not (empty? (re-find #"^gzip" type)))))
+
+(defn read-gzip [request]
+  "reads gzip data in the http request body into a string."
+  (when (gzip-request? request)
+    (-> request :body GZIPInputStream. slurp)))
+
+(defn wrap-gzip-request
+  "Decompress the body, if it has gzipped data. The header
+   content-encoding:gzip is used to check whether or not to
+   decompress the body."
+  [handler]
+  (fn [request]
+    (try
+      (if-let [body (read-gzip request)]
+        (handler (assoc request :body
+                        (ByteArrayInputStream. (.getBytes body))))
+        (handler request))
+      (catch ZipException e
+        {:status 400
+         :body "gzip content is badly formatted. check headers and or input data."}))))
