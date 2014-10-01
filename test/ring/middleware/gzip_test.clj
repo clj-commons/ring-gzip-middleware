@@ -100,3 +100,23 @@
         resp (app (accepting "gzip"))]
     (is (nil? (encoding resp)))
     (is (= output (:body resp)))))
+
+(deftest test-gzip-request?
+  (is (gzip-request? {:headers {"content-encoding" "gzip"}}))
+  (is (not (gzip-request? {:headers {"content-encoding" "ggzip"}})))
+  (is (not (gzip-request? {:headers {"content-type" "json"}}))))
+
+(deftest test-read-gzip
+  (let [request1 {:body (io/input-stream (io/resource "valid.gz"))
+                  :headers {"content-encoding" "gzip"}}
+        request2 {:body (io/input-stream (io/resource "valid.gz"))}]
+    (is (string? (read-gzip request1)))
+    (is (nil? (read-gzip request2)))))
+
+(deftest test-wrap-gzip-request
+  (let [wrap-gzip-request* (wrap-gzip-request identity)
+        request1 {:body (io/input-stream (io/resource "valid.gz"))
+                  :headers {"content-encoding" "gzip"}}
+        request2 {:body "foo"}]
+    (is (string? (slurp (:body (wrap-gzip-request* request1)))))
+    (is (= request2 (wrap-gzip-request* request2)))))
