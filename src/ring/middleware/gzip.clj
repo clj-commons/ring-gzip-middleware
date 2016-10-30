@@ -62,7 +62,7 @@
   (let [gzip-body (piped-gzipped-input-stream body)]
     (if (gzip-into-byte-array? resp)
       (let [output-stream (ByteArrayOutputStream.)
-            _ (-> (io/copy gzip-body output-stream))
+            _ (io/copy gzip-body output-stream)
             gzip-bytes (.toByteArray output-stream)]
         (-> resp
             (update-in [:headers]
