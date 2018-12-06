@@ -7,5 +7,7 @@
              :1.8  {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :1.7  {:dependencies [[org.clojure/clojure "1.7.0"]]}
              :1.6  {:dependencies [[org.clojure/clojure "1.6.0"]]}}
+  :deploy-repositories [["releases" :clojars]
+                        ["snapshots" :clojars]]
   :aliases {"all" ["with-profile" "1.6:1.7:1.8:1.9:1.10"]}
   :min-lein-version "2.0.0")
