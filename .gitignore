@@ -3,3 +3,14 @@ pom.xml
 lib
 classes
 .cake
+/target
+/classes
+/checkouts
+pom.xml
+pom.xml.asc
+*.jar
+*.class
+/.lein-*
+/.nrepl-port
+.hgignore
+.hg/
