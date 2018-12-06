@@ -3,6 +3,8 @@
 Gzips [Ring](http://github.com/ring-clojure/ring) responses for user agents
 which can handle it.
 
+[![Build Status](https://www.travis-ci.com/clj-commons/ring-gzip-middleware.svg)](https://www.travis-ci.com/clj-commons/ring-gzip-middleware)
+
 ### Usage
 
 Apply the Ring middleware function `ring.middleware.gzip/wrap-gzip` to
