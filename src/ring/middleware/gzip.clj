@@ -60,6 +60,11 @@
                       (dissoc "Content-Length")))
       (update-in [:body] piped-gzipped-input-stream)))
 
+(defn- gzip-accept? [accept]
+  (let [match (re-find #"(gzip|\*)(;q=((0|1)(.\d+)?))?" accept)]
+    (and match (not (contains? #{"0" "0.0" "0.00" "0.000"}
+                               (match 3))))))
+
 (defn wrap-gzip [handler]
   (fn [req]
     (let [{:keys [body status] :as resp} (handler req)]
@@ -71,9 +76,9 @@
                 (instance? InputStream body)
                 (instance? File body)))
         (let [accepts (get-in req [:headers "accept-encoding"] "")
-              match (re-find #"(gzip|\*)(;q=((0|1)(.\d+)?))?" accepts)]
-          (if (and match (not (contains? #{"0" "0.0" "0.00" "0.000"}
-                                         (match 3))))
+              is-gzip (cond (string? accepts) (gzip-accept? accepts)
+                            (coll? accepts) (some gzip-accept? accepts))]
+          (if is-gzip
             (gzipped-response resp)
             resp))
         resp))))
