@@ -35,6 +35,18 @@
     (is (= "gzip" (encoding resp)))
     (is (Arrays/equals (unzip (resp :body)) (.getBytes output)))))
 
+(deftest test-basic-gzip-async
+  "middleware should work with 3-arg async handlers as well"
+  (let [app (wrap-gzip
+             (fn [request respond raise]
+               (respond {:status 200
+                         :body output
+                         :headers {}})))
+        resp (app (accepting "gzip") identity identity)]
+    (is (= 200 (:status resp)))
+    (is (= "gzip" (encoding resp)))
+    (is (Arrays/equals (unzip (resp :body)) (.getBytes output)))))
+
 (deftest test-inputstream-gzip
   (let [app (wrap-gzip (fn [req] {:status 200
                                   :body (StringBufferInputStream. output)
@@ -57,7 +69,7 @@
         (println "Running on JDK7+, testing gzipping of seq response bodies.")
         (is (= "gzip" (encoding resp)))
         (is (Arrays/equals (unzip (resp :body)) (.getBytes output))))
-      (do 
+      (do
         (println "Running on <=JDK6, testing non-gzipping of seq response bodies.")
         (is (nil? (encoding resp)))
         (is (= seq-body (resp :body)))))))

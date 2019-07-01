@@ -60,20 +60,31 @@
                       (dissoc "Content-Length")))
       (update-in [:body] piped-gzipped-input-stream)))
 
-(defn wrap-gzip [handler]
-  (fn [req]
-    (let [{:keys [body status] :as resp} (handler req)]
-      (if (and (= status 200)
-               (not (get-in resp [:headers "Content-Encoding"]))
-               (or
-                (and (string? body) (> (count body) 200))
-                (and (seq? body) @flushable-gzip?)
-                (instance? InputStream body)
-                (instance? File body)))
-        (let [accepts (get-in req [:headers "accept-encoding"] "")
-              match (re-find #"(gzip|\*)(;q=((0|1)(.\d+)?))?" accepts)]
-          (if (and match (not (contains? #{"0" "0.0" "0.00" "0.000"}
-                                         (match 3))))
-            (gzipped-response resp)
-            resp))
-        resp))))
+(defn- gzip-response [req {:keys [body status] :as resp}]
+  (if (and (= status 200)
+           (not (get-in resp [:headers "Content-Encoding"]))
+           (or
+            (and (string? body) (> (count body) 200))
+            (and (seq? body) @flushable-gzip?)
+            (instance? InputStream body)
+            (instance? File body)))
+    (let [accepts (get-in req [:headers "accept-encoding"] "")
+          match (re-find #"(gzip|\*)(;q=((0|1)(.\d+)?))?" accepts)]
+      (if (and match (not (contains? #{"0" "0.0" "0.00" "0.000"}
+                                     (match 3))))
+        (gzipped-response resp)
+        resp))
+    resp))
+
+(defn wrap-gzip
+  "Ring middleware that GZIPs response if client can handle it."
+  [handler]
+  (fn
+    ([request]
+     (gzip-response request (handler request)))
+    ([request respond raise]
+     (handler
+      request
+      (fn [response]
+        (respond (gzip-response request response)))
+      raise))))
