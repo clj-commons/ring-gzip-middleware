@@ -13,7 +13,7 @@ middleware in a `->` form).
 
 ### Installation
 
-Add `[amalloy/ring-gzip-middleware "0.1.3"]` to your Leiningen dependencies.
+Add `[amalloy/ring-gzip-middleware "0.1.4"]` to your Leiningen dependencies.
 
 ### Compression of seq bodies
 
