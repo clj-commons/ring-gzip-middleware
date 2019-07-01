@@ -1,4 +1,4 @@
-(defproject amalloy/ring-gzip-middleware "0.1.4"
+(defproject amalloy/ring-gzip-middleware "0.1.5-SNAPSHOT"
   :url "https://github.com/clj-commons/ring-gzip-middleware"
   :description "Ring gzip encoding middleware"
   :dependencies [[org.clojure/clojure "1.9.0"]]
