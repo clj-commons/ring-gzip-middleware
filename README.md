@@ -3,8 +3,8 @@
 Gzips [Ring](http://github.com/ring-clojure/ring) responses for user agents
 which can handle it.
 
-[![Clojars Project](https://img.shields.io/clojars/v/clj-commons/ring-gzip-middleware.svg)](https://clojars.org/clj-commons/ring-gzip-middleware)
-[![cljdoc badge](https://cljdoc.org/badge/clj-commons/ring-gzip-middleware)](https://cljdoc.org/d/clj-commons/ring-gzip-middleware/CURRENT)
+[![Clojars Project](https://img.shields.io/clojars/v/amaloy/ring-gzip-middleware.svg)](https://clojars.org/amaloy/ring-gzip-middleware)
+[![cljdoc badge](https://cljdoc.org/badge/amaloy/ring-gzip-middleware)](https://cljdoc.org/d/amaloy/ring-gzip-middleware/CURRENT)
 [![Build Status](https://www.travis-ci.com/clj-commons/ring-gzip-middleware.svg)](https://www.travis-ci.com/clj-commons/ring-gzip-middleware)
 
 ### Usage
