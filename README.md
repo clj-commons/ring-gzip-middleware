@@ -5,7 +5,7 @@ which can handle it.
 
 [![Clojars Project](https://img.shields.io/clojars/v/amalloy/ring-gzip-middleware.svg)](https://clojars.org/amalloy/ring-gzip-middleware)
 [![cljdoc badge](https://cljdoc.org/badge/amalloy/ring-gzip-middleware)](https://cljdoc.org/d/amalloy/ring-gzip-middleware/CURRENT)
-[![Build Status](https://www.travis-ci.com/clj-commons/ring-gzip-middleware.svg)](https://www.travis-ci.com/clj-commons/ring-gzip-middleware)
+[![CircleCI](https://circleci.com/gh/clj-commons/ring-gzip-middleware.svg?style=svg)](https://circleci.com/gh/clj-commons/ring-gzip-middleware)
 
 ### Usage
 
