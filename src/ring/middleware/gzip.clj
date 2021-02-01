@@ -4,6 +4,8 @@
   (:import (java.util.zip GZIPOutputStream)
            (java.io InputStream
                     OutputStream
+                    ByteArrayOutputStream
+                    ByteArrayInputStream
                     Closeable
                     File
                     PipedInputStream
@@ -52,13 +54,28 @@
         (.close ^Closeable in)))
     pipe-in))
 
-(defn gzipped-response [resp]
-  (-> resp
-      (update-in [:headers]
-                 #(-> %
-                      (assoc "Content-Encoding" "gzip")
-                      (dissoc "Content-Length")))
-      (update-in [:body] piped-gzipped-input-stream)))
+(defn- gzip-into-byte-array? [resp]
+  (if-let [length (get-in resp [:headers "Content-Length"])]
+    (< (Long/parseLong length) 1048576)))
+
+(defn gzipped-response [{:keys [body] :as resp}]
+  (let [gzip-body (piped-gzipped-input-stream body)]
+    (if (gzip-into-byte-array? resp)
+      (let [output-stream (ByteArrayOutputStream.)
+            _ (io/copy gzip-body output-stream)
+            gzip-bytes (.toByteArray output-stream)]
+        (-> resp
+            (update-in [:headers]
+                       #(-> %
+                          (assoc "Content-Encoding" "gzip")
+                          (assoc "Content-Length" (str (count gzip-bytes)))))
+            (assoc :body (ByteArrayInputStream. gzip-bytes))))
+      (-> resp
+          (update-in [:headers]
+                     #(-> %
+                          (assoc "Content-Encoding" "gzip")
+                          (dissoc "Content-Length")))
+          (assoc :body gzip-body)))))
 
 (defn- gzip-response [req {:keys [body status] :as resp}]
   (if (and (= status 200)
