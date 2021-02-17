@@ -104,7 +104,7 @@
     (is (= "text" (encoding resp)))
     (is (= output (:body resp)))))
 
-(deftest test-status
+(deftest test-status-default
   "don't compress non-200 responses"
   (let [app (wrap-gzip (fn [req] {:status 404
                                   :body output
@@ -112,3 +112,17 @@
         resp (app (accepting "gzip"))]
     (is (nil? (encoding resp)))
     (is (= output (:body resp)))))
+
+(deftest test-status-compress-all
+  "compress all status codes when option is true"
+  (are [status-code] (let [app (wrap-gzip (fn [_] {:status status-code
+                                                   :body output
+                                                   :headers {}}) 
+                                          :compress-all-status-codes? true)
+                           res (app (accepting "gzip"))]
+                       (is (= "gzip" (encoding res)) 
+                           (format "Compressing status code %s" status-code)))
+    201
+    400
+    404
+    500))
