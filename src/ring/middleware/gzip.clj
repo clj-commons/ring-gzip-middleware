@@ -60,8 +60,9 @@
                       (dissoc "Content-Length")))
       (update-in [:body] piped-gzipped-input-stream)))
 
-(defn- gzip-response [req {:keys [body status] :as resp}]
-  (if (and (= status 200)
+(defn- gzip-response [req {:keys [body status] :as resp} {:keys [compress-all-status-codes?]}]
+  (if (and (or compress-all-status-codes?
+               (= status 200))
            (not (get-in resp [:headers "Content-Encoding"]))
            (or
             (and (string? body) (> (count body) 200))
@@ -78,13 +79,13 @@
 
 (defn wrap-gzip
   "Ring middleware that GZIPs response if client can handle it."
-  [handler]
+  [handler & opts]
   (fn
     ([request]
-     (gzip-response request (handler request)))
+     (gzip-response request (handler request) opts))
     ([request respond raise]
      (handler
       request
       (fn [response]
-        (respond (gzip-response request response)))
+        (respond (gzip-response request response opts)))
       raise))))
