@@ -105,7 +105,7 @@
     (is (= output (:body resp)))))
 
 (deftest test-status
-  "don't compress non-200 responses"
+  "don't compress non-2xx responses"
   (let [app (wrap-gzip (fn [req] {:status 404
                                   :body output
                                   :headers {}}))

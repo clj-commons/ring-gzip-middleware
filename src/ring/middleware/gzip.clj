@@ -31,9 +31,9 @@
     (loop []
       (let [size (.read input buffer)]
         (when (pos? size)
-          (do (.write output buffer 0 size)
-              (.flush output)
-              (recur)))))))
+          (.write output buffer 0 size)
+          (.flush output)
+          (recur))))))
 
 (defn piped-gzipped-input-stream [in]
   (let [pipe-in (piped-gzipped-input-stream*)
@@ -52,28 +52,52 @@
         (.close ^Closeable in)))
     pipe-in))
 
+(defn set-response-headers
+  [headers]
+  (-> headers
+      (assoc "Content-Encoding" "gzip")
+      (dissoc "Content-Length")))
+
 (defn gzipped-response [resp]
   (-> resp
-      (update-in [:headers]
-                 #(-> %
-                      (assoc "Content-Encoding" "gzip")
-                      (dissoc "Content-Length")))
-      (update-in [:body] piped-gzipped-input-stream)))
+      (update :headers set-response-headers)
+      (update :body piped-gzipped-input-stream)))
 
-(defn- gzip-response [req {:keys [body status] :as resp}]
-  (if (and (= status 200)
-           (not (get-in resp [:headers "Content-Encoding"]))
-           (or
-            (and (string? body) (> (count body) 200))
-            (and (seq? body) @flushable-gzip?)
-            (instance? InputStream body)
-            (instance? File body)))
-    (let [accepts (get-in req [:headers "accept-encoding"] "")
-          match (re-find #"(gzip|\*)(;q=((0|1)(.\d+)?))?" accepts)]
-      (if (and match (not (contains? #{"0" "0.0" "0.00" "0.000"}
-                                     (match 3))))
-        (gzipped-response resp)
-        resp))
+(defn accepts-gzip?
+  "Tests if the request indicates that the client can accept a gzipped response"
+  [{:keys [headers]}]
+  (let [accepts (or (get headers "accept-encoding")
+                    (get headers "Accept-Encoding")
+                    "")
+        match (re-find #"(gzip|\*)(;q=((0|1)(.\d+)?))?" accepts)]
+    (and match (not (contains? #{"0" "0.0" "0.00" "0.000"} (match 3))))))
+
+(def ^:private default-status 200)
+
+(def supported-status? #{200 201 202 203 204 205})
+
+(def min-length 200)
+
+(defn content-encoding?
+  "Tests if the provided response has a content-encoding header"
+  [{:keys [headers]}]
+  (or (get headers "Content-Encoding")
+      (get headers "content-encoding")))
+
+(defn supported-response?
+  [{:keys [body status] :as resp}]
+  (and (supported-status? (or status default-status))
+       (not (content-encoding? resp))
+       (or
+        (and (string? body) (> (count body) min-length))
+        (instance? InputStream body)
+        (instance? File body)
+        (and (seq? body) @flushable-gzip?))))
+
+(defn gzip-response [req resp]
+  (if (and (supported-response? resp)
+           (accepts-gzip? req))
+    (gzipped-response resp)
     resp))
 
 (defn wrap-gzip
