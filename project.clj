@@ -3,6 +3,8 @@
   :url "https://github.com/clj-commons/ring-gzip-middleware"
   :description "Ring gzip encoding middleware"
   :dependencies [[org.clojure/clojure "1.9.0"]]
+  :license {:name "Eclipse Public License"
+            :url  "http://www.eclipse.org/legal/epl-v10.html"}
   :profiles {:1.12 {:dependencies [[org.clojure/clojure "1.12.0"]]}
              :1.11 {:dependencies [[org.clojure/clojure "1.11.4"]]}
              :1.10 {:dependencies [[org.clojure/clojure "1.10.3"]]}
